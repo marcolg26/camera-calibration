@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import os
 import cv2
+from mpmath import *
 from functions import *
 
 def calibrate_camera(personal=0, grid_size_x=8, grid_size_y=11, square_size=11):
@@ -13,8 +14,9 @@ def calibrate_camera(personal=0, grid_size_x=8, grid_size_y=11, square_size=11):
         folderpath = os.path.dirname(os.path.abspath(__file__)) + "\\images\\personal\\"
 
     image_data = {}
+    K_parameters = {}
 
-    images_path = [os.path.join(folderpath, imagename) for imagename in os.listdir(folderpath) if imagename.endswith(".tiff")]
+    images_path = [os.path.join(folderpath, imagename) for imagename in os.listdir(folderpath) if( imagename.endswith(".tiff") or imagename.endswith(".tif"))]
     images_path.sort()
 
     HH=[]
@@ -58,13 +60,18 @@ def calibrate_camera(personal=0, grid_size_x=8, grid_size_y=11, square_size=11):
             P = K @ np.hstack((R, t))
             image_data[img]["P"] = P
 
-            image_data[img]["alphau"] = K[0,0]
-            image_data[img]["alphav"] = K[1,1]
-            image_data[img]["u0"] = K[0,2]
-            image_data[img]["v0"] = K[1,2]
+    K_parameters["alphau"] = K[0,0]
+    K_parameters["skew"] = acot(K[0,1]/K_parameters["alphau"])
+    K_parameters["alphav"] = K[1,1]/sin(K_parameters["skew"])
+    K_parameters["u0"] = K[0,2]
+    K_parameters["v0"] = K[1,2]
 
-    #print(image_data["image03"]["real_coordinates"])
-    #print(K)
+    print(f'K = {K}')
+    print(f'alphau = {K_parameters["alphau"]}')
+    print(f'alphav = {K_parameters["alphav"]}')
+    print(f'skew = {K_parameters["skew"]}')
+    print(f'u0 = {K_parameters["u0"]}')
+    print(f'v0 = {K_parameters["v0"]}')
 
     for p in images_path:
 
@@ -75,12 +82,13 @@ def calibrate_camera(personal=0, grid_size_x=8, grid_size_y=11, square_size=11):
 
         if image_data[img]["corners"] is not False:
 
-            error = compute_error(image_data[img])
-            print(f'{image_data[img]["name"]} - {error}')
+            compute_error(image_data[img])
 
             draw_points(image, image_data[img])
+            xx=round(max(image_data[img]["real_coordinates"][:, 0])/2)
+            yy=round(max(image_data[img]["real_coordinates"][:, 1])/2)
 
-            superimpose_cylinder(image2, image_data[img], 55, 35, 30, 75)
+            superimpose_cylinder(image2, image_data[img], xx, yy, 30, 75)
 
 
 if __name__ == "__main__":

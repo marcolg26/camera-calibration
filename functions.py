@@ -57,7 +57,7 @@ def compute_K(HH):
         V = np.vstack((V, np.hstack(vij_matrix(HI,0,1))))
         V = np.vstack((V, np.hstack(vij_matrix(HI,0,0)- vij_matrix(HI,1,1))))
 
-    print(V.shape)
+    #print(V.shape)
 
     U, S, Vtransposed = np.linalg.svd(V)
 
@@ -128,6 +128,7 @@ def compute_error(image):
         error = error + ((P[0, :]@m)/(P[2, :]@m) - point[0])**2 + ((P[1, :]@m)/(P[2, :]@m) - point[1])**2
         i = i+1
 
+    error=round(error, 2)
     image["error"] = error
     return error
 
@@ -149,6 +150,13 @@ def draw_points(figure, image):
     plt.figure(num = f'{image["name"]}', figsize = (6.4*2,4.8*2))
     plt.axis('off')
     plt.imshow(figure)
+
+    text = f'R={np.round(image["R"],2)}\n'
+    text += f't={np.round(image["t"].transpose(),3)}\n'
+    text += f'error={image["error"]}\n'
+    #text += '${t}$'
+
+    plt.text(.01, .99, text, ha='left', va='top', color='blue')
 
     if not os.path.exists(f'results'):
         os.makedirs(f'results')
