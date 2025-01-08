@@ -9,8 +9,10 @@ def estimate_homographies(path, grid_size):
     image = cv2.imread(path)
 
     return_value, corners = cv2.findChessboardCorners(image, patternSize=grid_size)
+
     if return_value is False:
         print(f'{img} corners not found')
+        return False, 0, 0, 0
 
     corners=corners.reshape((grid_size[0]*grid_size[1],2)).copy()
 
@@ -46,7 +48,7 @@ def estimate_homographies(path, grid_size):
     h=Vtransposed.transpose()[:,-1]
     H = h.reshape(3, 3) 
 
-    return H, corners, real_coordinates
+    return True, H, corners, real_coordinates
 
 def compute_K(HH):
 
@@ -153,9 +155,10 @@ def draw_points(figure, image):
     plt.savefig(f'results/{image["name"]}.tiff', bbox_inches='tight', pad_inches = 0)
     plt.show()
 
-def superimpose_cilinder(figure, image, a, b, r, h):
+def superimpose_cylinder(figure, image, a, b, r, h):
 
     P = image["P"]
+    tz = image["t"][2]
 
     stepSize = 0.1
     num_steps = int(2 * np.pi / stepSize)
@@ -170,8 +173,13 @@ def superimpose_cilinder(figure, image, a, b, r, h):
         positionsZ[i] = 0
         t += stepSize
 
-    circle_inf = P @ np.vstack((positionsX, positionsY, positionsZ, np.ones_like((positionsX))))
-    circle_sup = P @ np.vstack((positionsX, positionsY, positionsZ + h, np.ones_like((positionsX))))
+    if tz >= 0:
+        circle_inf = P @ np.vstack((positionsX, positionsY, positionsZ, np.ones_like((positionsX))))
+        circle_sup = P @ np.vstack((positionsX, positionsY, positionsZ + h, np.ones_like((positionsX))))
+    else:
+        circle_inf = P @ np.vstack((positionsX, positionsY, positionsZ, np.ones_like((positionsX))))
+        circle_sup = P @ np.vstack((positionsX, positionsY, positionsZ - h, np.ones_like((positionsX))))
+
 
     circle_inf = (circle_inf/circle_inf[2])[:2]
     circle_sup = (circle_sup/circle_sup[2])[:2]
