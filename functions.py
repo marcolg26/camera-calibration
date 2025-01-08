@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 import os
 
-def estimate_homographies(path, grid_size):
+def estimate_homographies(path, grid_size, square_size):
     
     img = os.path.basename(path).split('.')[0]
     image = cv2.imread(path)
@@ -16,7 +16,6 @@ def estimate_homographies(path, grid_size):
 
     corners=corners.reshape((grid_size[0]*grid_size[1],2)).copy()
 
-    square_size = 11
     real_coordinates = np.empty_like(corners)
 
     for index, corner in enumerate(corners):
@@ -129,6 +128,7 @@ def compute_error(image):
         error = error + ((P[0, :]@m)/(P[2, :]@m) - point[0])**2 + ((P[1, :]@m)/(P[2, :]@m) - point[1])**2
         i = i+1
 
+    image["error"] = error
     return error
 
 def draw_points(figure, image):
