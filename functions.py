@@ -180,25 +180,41 @@ def superimpose_cylinder(figure, image, a, b, r, h):
         positionsY[i] = r * np.sin(t) + b
         positionsZ[i] = 0
         t += stepSize
-
+        
+    circle_inf = P @ np.vstack((positionsX, positionsY, positionsZ, np.ones_like((positionsX))))
     if tz >= 0:
-        circle_inf = P @ np.vstack((positionsX, positionsY, positionsZ, np.ones_like((positionsX))))
         circle_sup = P @ np.vstack((positionsX, positionsY, positionsZ + h, np.ones_like((positionsX))))
     else:
-        circle_inf = P @ np.vstack((positionsX, positionsY, positionsZ, np.ones_like((positionsX))))
         circle_sup = P @ np.vstack((positionsX, positionsY, positionsZ - h, np.ones_like((positionsX))))
 
 
     circle_inf = (circle_inf/circle_inf[2])[:2]
     circle_sup = (circle_sup/circle_sup[2])[:2]
 
-    cv2.polylines(figure, np.int32([circle_inf.transpose()]), isClosed=True, color=(255, 0, 0), thickness=2)
-    cv2.polylines(figure, np.int32([circle_sup.transpose()]), isClosed=True, color=(0, 255, 0), thickness=2)
+    overlay = figure.copy()
 
-    for i in range(num_steps):
-        points_inf = np.int32(circle_inf[:, i])
-        points_sup = np.int32(circle_sup[:, i])
-        cv2.line(figure, points_inf, points_sup, color=(0, 0, 255), thickness=2)
+    cv2.fillPoly(overlay, np.int32([circle_inf.transpose()]), color=(255, 0, 0))
+
+    alpha = 0.5
+    figure = cv2.addWeighted(overlay, alpha, figure, 1 - alpha, 0)
+
+    overlay = figure.copy()
+
+    cv2.fillPoly(overlay, np.int32([circle_sup.transpose()]), color=(0, 255, 0))
+
+    figure = cv2.addWeighted(overlay, alpha, figure, 1 - alpha, 0)
+    
+    alpha = 0.2
+    for i in range(h):
+        overlay = figure.copy()
+        if tz >= 0:
+            circle_int = P @ np.vstack((positionsX, positionsY, positionsZ + i, np.ones_like((positionsX))))
+        else:
+            circle_int = P @ np.vstack((positionsX, positionsY, positionsZ - i, np.ones_like((positionsX))))
+            
+        circle_int = (circle_int/circle_int[2])[:2]
+        cv2.polylines(overlay, np.int32([circle_int.transpose()]), isClosed=True, color=(128, 128, 128), thickness=1)
+        figure = cv2.addWeighted(overlay, alpha, figure, 1 - alpha, 0)
 
     plt.figure(num = f'{image["name"]} - cilinder', figsize = (6.4*2,4.8*2))
     plt.axis('off')
