@@ -57,18 +57,16 @@ def compute_K(HH):
         V = np.vstack((V, np.hstack(vij_matrix(HI,0,1))))
         V = np.vstack((V, np.hstack(vij_matrix(HI,0,0)- vij_matrix(HI,1,1))))
 
-    #print(V.shape)
 
-    U, S, Vtransposed = np.linalg.svd(V)
+    U, sigma, Stransposed = np.linalg.svd(V)
 
-    b = Vtransposed.transpose()[:,-1]
+    b = Stransposed.transpose()[:,-1]
 
     B=[[b[0], b[1], b[3]],
-    [b[1], b[2], b[4]],
-    [b[3], b[4], b[5]]]
+       [b[1], b[2], b[4]],
+       [b[3], b[4], b[5]]]
 
     B = np.array(B)
-    #print((B==B.T).all())
 
     if np.all(np.linalg.eigvals(B) > 0):
         L = np.linalg.cholesky(B)
@@ -77,7 +75,7 @@ def compute_K(HH):
         L = np.linalg.cholesky(-B)
 
     else:
-        print("error")
+        print("error in the calculation of Cholesky factorization")
 
     K = np.linalg.inv(L.transpose())
     K = K/K[2,2]
@@ -120,13 +118,11 @@ def compute_error(image):
     real_coordinates = image["real_coordinates"]
     P = image["P"]
 
-    i = 0
     error = 0
-    for point in corners:
+    for i, point in enumerate(corners):
 
         m = np.array([real_coordinates[i, 0], real_coordinates[i, 1], 0, 1])
         error = error + ((P[0, :]@m)/(P[2, :]@m) - point[0])**2 + ((P[1, :]@m)/(P[2, :]@m) - point[1])**2
-        i = i+1
 
     error=round(error, 2)
     image["error"] = error
@@ -138,25 +134,24 @@ def draw_points(figure, image):
     real_coordinates = image["real_coordinates"]
     P = image["P"]
 
-    i=0
-
-    for point in corners:
+    for i, point in enumerate(corners):
 
         m = np.array([real_coordinates[i, 0], real_coordinates[i, 1], 0, 1])
         cv2.circle(figure, (round(point[0]),round(point[1])), 5, color=(255,0,0), thickness=1)
         cv2.circle(figure, (round((P[0, :]@m)/(P[2, :]@m) ),round((P[1, :]@m)/(P[2, :]@m))), 5, color=(0,0,255), thickness=1)
-        i = i+1
     
     plt.figure(num = f'{image["name"]}', figsize = (6.4*2,4.8*2))
     plt.axis('off')
     plt.imshow(figure)
 
     text = f'R={np.round(image["R"],2)}\n'
-    text += f't={np.round(image["t"].transpose(),3)}\n'
-    text += f'error={image["error"]}\n'
-    #text += '${t}$'
+    text += f't={np.round(image["t"].transpose(),3)}'
+    text += '$^{T}$\n'
+    text += f'error={image["error"]}'
+    
 
-    plt.text(.01, .99, text, ha='left', va='top', color='blue')
+    t = plt.text(.01, .99, text, ha='left', va='top', color='black')
+    t.set_bbox(dict(facecolor='white', alpha=0.5, edgecolor='white'))
 
     if not os.path.exists(f'results'):
         os.makedirs(f'results')
@@ -193,13 +188,15 @@ def superimpose_cylinder(figure, image, a, b, r, h):
 
     overlay = figure.copy()
 
+    cv2.polylines(figure, np.int32([circle_inf.transpose()]), isClosed=True, color=(0, 0, 0), thickness=2)
     cv2.fillPoly(overlay, np.int32([circle_inf.transpose()]), color=(255, 0, 0))
 
-    alpha = 0.5
+    alpha = 0.6
     figure = cv2.addWeighted(overlay, alpha, figure, 1 - alpha, 0)
 
     overlay = figure.copy()
 
+    cv2.polylines(figure, np.int32([circle_sup.transpose()]), isClosed=True, color=(0, 0, 0), thickness=2)
     cv2.fillPoly(overlay, np.int32([circle_sup.transpose()]), color=(0, 255, 0))
 
     figure = cv2.addWeighted(overlay, alpha, figure, 1 - alpha, 0)
@@ -211,12 +208,12 @@ def superimpose_cylinder(figure, image, a, b, r, h):
             circle_int = P @ np.vstack((positionsX, positionsY, positionsZ + i, np.ones_like((positionsX))))
         else:
             circle_int = P @ np.vstack((positionsX, positionsY, positionsZ - i, np.ones_like((positionsX))))
-            
+
         circle_int = (circle_int/circle_int[2])[:2]
         cv2.polylines(overlay, np.int32([circle_int.transpose()]), isClosed=True, color=(128, 128, 128), thickness=1)
         figure = cv2.addWeighted(overlay, alpha, figure, 1 - alpha, 0)
 
-    plt.figure(num = f'{image["name"]} - cilinder', figsize = (6.4*2,4.8*2))
+    plt.figure(num = f'{image["name"]} - cylinder', figsize = (6.4*2,4.8*2))
     plt.axis('off')
     plt.imshow(figure)
 

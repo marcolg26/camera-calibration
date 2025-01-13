@@ -19,7 +19,7 @@ def calibrate_camera(personal=0, grid_size_x=8, grid_size_y=11, square_size=11):
     images_path = [os.path.join(folderpath, imagename) for imagename in os.listdir(folderpath) if( imagename.endswith(".tiff") or imagename.endswith(".tif"))]
     images_path.sort()
 
-    HH=[]
+    Hk=[]
     for p in images_path:
 
         img = os.path.basename(p).split('.')[0]
@@ -31,7 +31,7 @@ def calibrate_camera(personal=0, grid_size_x=8, grid_size_y=11, square_size=11):
         image_data[img]["name"] = img
         
         if found is True:
-            HH.append(H)
+            Hk.append(H)
             image_data[img]["corners"] = corners
             image_data[img]["real_coordinates"] = real_coordinates
             image_data[img]["H"] = H
@@ -40,7 +40,7 @@ def calibrate_camera(personal=0, grid_size_x=8, grid_size_y=11, square_size=11):
             image_data[img]["corners"] = False
 
 
-    K = compute_K(HH)
+    K = compute_K(Hk)
 
     for p in images_path:
 
