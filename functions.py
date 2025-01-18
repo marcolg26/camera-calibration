@@ -137,8 +137,8 @@ def draw_points(figure, image):
     for i, point in enumerate(corners):
 
         m = np.array([real_coordinates[i, 0], real_coordinates[i, 1], 0, 1])
-        cv2.circle(figure, (round(point[0]),round(point[1])), 5, color=(255,0,0), thickness=1)
-        cv2.circle(figure, (round((P[0, :]@m)/(P[2, :]@m) ),round((P[1, :]@m)/(P[2, :]@m))), 5, color=(0,0,255), thickness=1)
+        cv2.circle(figure, (round(point[0]),round(point[1])), 5, color=(0,0,255), thickness=1)
+        cv2.circle(figure, (round((P[0, :]@m)/(P[2, :]@m) ),round((P[1, :]@m)/(P[2, :]@m))), 5, color=(255,0,0), thickness=1)
     
     plt.figure(num = f'{image["name"]}', figsize = (6.4*2,4.8*2))
     plt.axis('off')
@@ -149,13 +149,17 @@ def draw_points(figure, image):
     text += '$^{T}$\n'
     text += f'error={image["error"]}'
     
-
     t = plt.text(.01, .99, text, ha='left', va='top', color='black')
     t.set_bbox(dict(facecolor='white', alpha=0.5, edgecolor='white'))
 
-    if not os.path.exists(f'results'):
-        os.makedirs(f'results')
-    plt.savefig(f'results/{image["name"]}.tiff', bbox_inches='tight', pad_inches = 0)
+    if image["personal"] is True:
+        path = f'results/personal'
+    else:
+        path = f'results'
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+    plt.savefig(f'{path}/{image["name"]}.tiff', bbox_inches='tight', pad_inches = 0)
     plt.show()
 
 def superimpose_cylinder(figure, image, a, b, r, h):
@@ -191,7 +195,7 @@ def superimpose_cylinder(figure, image, a, b, r, h):
     cv2.polylines(figure, np.int32([circle_inf.transpose()]), isClosed=True, color=(0, 0, 0), thickness=2)
     cv2.fillPoly(overlay, np.int32([circle_inf.transpose()]), color=(255, 0, 0))
 
-    alpha = 0.6
+    alpha = 0.7
     figure = cv2.addWeighted(overlay, alpha, figure, 1 - alpha, 0)
 
     overlay = figure.copy()
@@ -217,9 +221,14 @@ def superimpose_cylinder(figure, image, a, b, r, h):
     plt.axis('off')
     plt.imshow(figure)
 
-    if not os.path.exists(f'results'):
-        os.makedirs(f'results')
-    plt.savefig(f'results/{image["name"]} - cilinder.tiff', bbox_inches='tight', pad_inches = 0)
+    if image["personal"] is True:
+        path = f'results/personal'
+    else:
+        path = f'results'
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+    plt.savefig(f'{path}/{image["name"]} - cylinder.tiff', bbox_inches='tight', pad_inches = 0)
     plt.show()
 
     return 0

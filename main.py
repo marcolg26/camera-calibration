@@ -29,6 +29,11 @@ def calibrate_camera(personal=0, grid_size_x=8, grid_size_y=11, square_size=11):
         found, H, corners, real_coordinates = estimate_homographies(p, grid_size, square_size)
 
         image_data[img]["name"] = img
+
+        if personal == 1:
+            image_data[img]["personal"] = True
+        else:
+            image_data[img]["personal"] = False
         
         if found is True:
             Hk.append(H)
