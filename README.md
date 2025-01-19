@@ -1,4 +1,6 @@
 # Camera Calibrator
+Camera calibrator made implementing [Zhang's procedure](https://ieeexplore.ieee.org/document/888718)
+
 
 To run the calibrator with default images and settings:
 ```bash
