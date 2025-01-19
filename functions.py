@@ -159,7 +159,7 @@ def draw_points(figure, image):
 
     if not os.path.exists(path):
         os.makedirs(path)
-    plt.savefig(f'{path}/{image["name"]}.tiff', bbox_inches='tight', pad_inches = 0)
+    plt.savefig(f'{path}/{image["name"]} - points.png', bbox_inches='tight', pad_inches = 0)
     plt.show()
 
 def superimpose_cylinder(figure, image, a, b, r, h):
@@ -228,7 +228,7 @@ def superimpose_cylinder(figure, image, a, b, r, h):
 
     if not os.path.exists(path):
         os.makedirs(path)
-    plt.savefig(f'{path}/{image["name"]} - cylinder.tiff', bbox_inches='tight', pad_inches = 0)
+    plt.savefig(f'{path}/{image["name"]} - cylinder.png', bbox_inches='tight', pad_inches = 0)
     plt.show()
 
     return 0
