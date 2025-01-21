@@ -16,6 +16,10 @@ def estimate_homographies(path, grid_size, square_size):
 
     corners=corners.reshape((grid_size[0]*grid_size[1],2)).copy()
 
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    criteria = (cv2.TERM_CRITERIA_MAX_ITER | cv2.TERM_CRITERIA_EPS, 100, 0.001)
+    cv2.cornerSubPix(gray,corners,(5,5),(-1,-1),criteria)
+
     real_coordinates = np.empty_like(corners)
 
     for index, corner in enumerate(corners):
