@@ -97,18 +97,20 @@ def vij_matrix(H, i, j):
 
 def compute_Rt(H, K):
 
-    lambd = 1/(np.linalg.norm(np.linalg.inv(K)* H[:,0]))
+    lambd = 1/(np.linalg.norm(np.linalg.inv(K)@ H[:,0]))
 
     r1 = lambd*np.linalg.inv(K)@H[:,0]
     r2 = lambd*np.linalg.inv(K)@H[:,1]
     r3 = np.cross(r1, r2)
     R = np.column_stack((r1, r2, r3))
-
-    U, S, Vtransposed = np.linalg.svd(R)
-    Rprime = U@Vtransposed
     
     t = lambd*np.linalg.inv(K)@H[:,2]
     t= t.reshape(3, 1)
+
+    if not np.allclose(R.transpose(), np.linalg.inv(R)):
+        U, S, Vtransposed = np.linalg.svd(R)
+        Rprime = U@Vtransposed
+        R = Rprime
 
     return R, t
 
