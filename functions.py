@@ -266,7 +266,7 @@ def create_compound_image(path, limages, rows, cols):
 
     height, weight, n_c = limages[0].shape
 
-    compound_img = np.empty((rows * height, cols * weight, n_c), dtype="uint8")
+    compound_img = np.full((rows * height, cols * weight, n_c), fill_value=255, dtype="uint8")
 
     for i in range(rows):
         images_max_index = min((i + 1) * cols, len(limages))
