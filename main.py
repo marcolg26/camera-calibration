@@ -81,6 +81,9 @@ def calibrate_camera(personal=0, grid_size_x=8, grid_size_y=11, square_size=11):
     print(f'u0 = {K_parameters["u0"]}')
     print(f'v0 = {K_parameters["v0"]}')
 
+    cylinder_images = []
+    n = 0
+
     for p in images_path:
 
         img = os.path.basename(p).split('.')[0]
@@ -96,7 +99,18 @@ def calibrate_camera(personal=0, grid_size_x=8, grid_size_y=11, square_size=11):
             xx = round(max(image_data[img]["real_coordinates"][:, 0])/2)
             yy = round(max(image_data[img]["real_coordinates"][:, 1])/2)
 
-            superimpose_cylinder(image2, image_data[img], xx, yy, 30, 75)
+            cylinder_images.append(superimpose_cylinder(
+                image2, image_data[img], xx, yy, 30, 75))
+            n = n + 1
+
+    if personal == 1:
+        path = f'results/personal'
+    else:
+        path = f'results'
+
+    rows = round(sqrt(n))
+    cols = round(sqrt(n)) + 1
+    create_compound_image(path, cylinder_images, rows, cols)
 
 
 if __name__ == "__main__":

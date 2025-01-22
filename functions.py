@@ -259,4 +259,33 @@ def superimpose_cylinder(figure, image, a, b, r, h):
                 bbox_inches='tight', pad_inches=0)
     plt.show()
 
-    return 0
+    return figure
+
+
+def create_compound_image(path, limages, rows, cols):
+
+    height, weight, n_c = limages[0].shape
+
+    compound_img = np.empty((rows * height, cols * weight, n_c), dtype="uint8")
+
+    for i in range(rows):
+        images_max_index = min((i + 1) * cols, len(limages))
+        compound_img_row = np.concatenate(
+            limages[i * cols: images_max_index], axis=1)
+        compound_img[i * height: (i + 1) * height,
+                     : compound_img_row.shape[1]] = compound_img_row
+
+        if images_max_index == len(limages) - 1:
+            break
+
+    plt.figure(num='compound image', figsize=(6.4*2, 4.8*2))
+    plt.axis('off')
+    plt.imshow(compound_img)
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+    plt.savefig(f'{path}/compound.png',
+                bbox_inches='tight', pad_inches=0)
+    plt.show()
+
+    return compound_img
